@@ -8,21 +8,27 @@ def f(x,y):
     return math.sin(x)*math.exp(pow(1-math.cos(y), 2)) + math.cos(y)*math.exp(pow(1-math.sin(x), 2)) + pow((x-y),2)
 
 def linear_rank(list):
+
+    # Variables to make df
     results = []
     x=[]
     y=[]
     ranking=[]
     cumulative_sum=[]
     for individual in list:
+        # Save x, y and f(x,y)
         results.append(f(individual[0],individual[1]))
         x.append(individual[0])
         y.append(individual[1])
+        # Dummy values -1
         ranking.append(-1)
         cumulative_sum.append(-1)
 
+    # Create and sort array by results
     data = pd.DataFrame(np.array(np.array([x,y,results,ranking,cumulative_sum]).T), columns=['x','y','result','ranking', 'soma'])
     data = data.sort_values(by=['result'], ascending=True, ignore_index=True)
 
+    # Rank all from 0 to 100
     data['ranking'][0] = 100
     data['ranking'][len(data) - 1] = 0
     for i in data.index:
@@ -30,6 +36,9 @@ def linear_rank(list):
             data['ranking'][i] = 100*((len(data) - i - 1)/(len(data) - 1))
     return data
 
+
+# Roll new (n) individuals, given that better ranked ones
+#have more chance to be chosen. Can have duplicates.
 def roll(data, size):
 
     selecteds = []
@@ -50,7 +59,22 @@ def roll(data, size):
 
 
 def arithmetic_crossover(selected, breeding_rate):
-    pass
+
+    for i in range(0, int(len(selected)/2)):
+        
+        # Checks if pair will breed
+        if random.uniform(0,1) > breeding_rate:
+            continue
+
+        index = 2*i
+
+        alpha = random.uniform(0,1)
+        children1 = [selected[index][0]*alpha + (1-alpha)*selected[index+1][0], 
+                     selected[index][1]*alpha + (1-alpha)*selected[index+1][1]]
+        children2 = [selected[index+1][0]*alpha + (1-alpha)*selected[index][0],
+                     selected[index+1][1]*alpha + (1-alpha)*selected[index][1]]
+        selected[index] = children1
+        selected[index+1] = children2
 
 
 if __name__ == "__main__":
@@ -66,10 +90,6 @@ if __name__ == "__main__":
     ranking = linear_rank(population)
 
     selected = roll(ranking, size)
-
-    # crossover aritmetico, casais em ordem. Gerar um valor entre 0 e 1. 
-    # Tem que ver se vai cruzar ou não (precisa de uma taxa de cruzamento em torno de 0.7), perguntando uma vez por casal. 
-    # alpha é um valor aleatorio entre 0 e 1, fazendo em x e y. Gerar os filhos e substituir os pais.
 
     arithmetic_crossover(selected, breeding_rate)
 
