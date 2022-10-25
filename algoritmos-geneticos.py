@@ -1,11 +1,35 @@
-
-import math
 import random
 import pandas as pd
 import numpy as np
 
+from mpl_toolkits import mplot3d
+import matplotlib.pyplot as plt
+
 def f(x,y):
-    return math.sin(x)*math.exp(pow(1-math.cos(y), 2)) + math.cos(y)*math.exp(pow(1-math.sin(x), 2)) + pow((x-y),2)
+    return np.sin(x)*np.exp(pow(1-np.cos(y), 2)) + np.cos(y)*np.exp(pow(1-np.sin(x), 2)) + pow((x-y),2)
+
+def plot(points):
+    x = np.linspace(-10, 10, 100)
+    y = np.linspace(-10, 10, 100)
+    X, Y = np.meshgrid(x, y)
+    Z = f(X, Y)
+
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    
+    # Plot points
+    xdata = np.array(selected).T[0]
+    ydata = np.array(selected).T[1]
+    zdata = f(xdata, ydata)
+    ax.scatter3D(xdata, ydata, zdata, c=zdata, cmap='copper')
+
+    # Plot graph
+    ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                    cmap='viridis', edgecolor='none')
+    ax.set_title('surface')
+    
+
+    fig.show()
 
 def linear_rank(list):
 
@@ -77,10 +101,14 @@ def arithmetic_crossover(selected, breeding_rate):
         selected[index+1] = children2
 
 
+def mutation(selected, mutation_rate):
+    pass
+
 if __name__ == "__main__":
 
     size = 100
     breeding_rate = 0.7
+    mutation_rate = 0.001
 
     population = []
 
@@ -92,6 +120,10 @@ if __name__ == "__main__":
     selected = roll(ranking, size)
 
     arithmetic_crossover(selected, breeding_rate)
+
+    mutation(selected, mutation_rate)
+
+    plot(selected)
 
     print('test')
     
