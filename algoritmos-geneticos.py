@@ -15,20 +15,19 @@ def plot(points):
     Z = f(X, Y)
 
     fig = plt.figure()
-    ax = plt.axes(projection='3d')
+    ax = mplot3d.Axes3D(fig=fig, computed_zorder=False)
+    
+    # Plot graph
+    ax.plot_surface(X, Y, Z, rstride=2, cstride=2,
+                    cmap='summer', edgecolor='none', zorder=0.5)
+    ax.set_title('bird')
     
     # Plot points
-    xdata = np.array(selected).T[0]
-    ydata = np.array(selected).T[1]
+    xdata = np.array(points).T[0]
+    ydata = np.array(points).T[1]
     zdata = f(xdata, ydata)
-    ax.scatter3D(xdata, ydata, zdata, c=zdata, cmap='copper')
-
-    # Plot graph
-    ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
-                    cmap='viridis', edgecolor='none')
-    ax.set_title('surface')
+    ax.scatter3D(xdata, ydata, zdata, c='black', linewidths=1, zorder=1)
     
-
     fig.show()
 
 def linear_rank(list):
@@ -109,21 +108,24 @@ if __name__ == "__main__":
     size = 100
     breeding_rate = 0.7
     mutation_rate = 0.001
+    iterations = 100
 
     population = []
 
     for x in range(0,size):
         population.append([random.uniform(-10, 10),random.uniform(-10, 10)])
     
-    ranking = linear_rank(population)
+    for it in range(0, iterations):
+    
+        ranking = linear_rank(population)
 
-    selected = roll(ranking, size)
+        population = roll(ranking, size)
 
-    arithmetic_crossover(selected, breeding_rate)
+        arithmetic_crossover(population, breeding_rate)
 
-    mutation(selected, mutation_rate)
+        mutation(population, mutation_rate)
 
-    plot(selected)
+    plot(population)
 
     print('test')
     
