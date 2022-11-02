@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 def f(x,y):
     return np.sin(x)*np.exp(pow(1-np.cos(y), 2)) + np.cos(y)*np.exp(pow(1-np.sin(x), 2)) + pow((x-y),2)
 
-def plot(points):
+def plot_3d(points):
     x = np.linspace(-10, 10, 100)
     y = np.linspace(-10, 10, 100)
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
 
-    fig = plt.figure()
-    ax = mplot3d.Axes3D(fig=fig, computed_zorder=False)
+    fig = plt.figure(0)
+    ax = fig.add_subplot(111, projection="3d", computed_zorder=False)
     
     # Plot graph
     ax.plot_surface(X, Y, Z, rstride=2, cstride=2,
@@ -29,6 +29,19 @@ def plot(points):
     ax.scatter3D(xdata, ydata, zdata, c='black', linewidths=1, zorder=1)
     
     fig.show()
+
+def plot_2d(results, expected_result):
+
+    plt.figure()
+
+    x = np.linspace(start=0, stop=len(results)-1, num=len(results))
+
+    # Compute data in percentage (100 is the expected result)
+    plt.plot(x, 100*f(np.array(results).T[0], np.array(results).T[1])/expected_result)
+
+    plt.xlabel('Geracao')
+    plt.ylabel('Acerto')
+    plt.show()
 
 def linear_rank(list):
 
@@ -100,32 +113,56 @@ def arithmetic_crossover(selected, breeding_rate):
         selected[index+1] = children2
 
 
-def mutation(selected, mutation_rate):
-    pass
+def uniform_mutation(selected, mutation_rate):
+
+    for index in range(0, len(selected)):
+
+        # Checks if mutation will happen
+        if random.uniform(0,1) > mutation_rate:
+            continue
+
+        # Generate new random values for the mutated individual
+        selected[index] = [random.uniform(-10, 10),random.uniform(-10, 10)]
+
 
 if __name__ == "__main__":
 
     size = 100
     breeding_rate = 0.7
     mutation_rate = 0.001
-    iterations = 100
+    generations = 20
+    expected_result = -106.764537
+    # If true, will show a 3D graph at the end of each generation.
+    plot_each_generation = False
 
     population = []
+    result_data = []
 
     for x in range(0,size):
         population.append([random.uniform(-10, 10),random.uniform(-10, 10)])
     
-    for it in range(0, iterations):
+    for it in range(0, generations):
     
         ranking = linear_rank(population)
+
+        result_data.append([ranking['x'][0], ranking['y'][0]])
 
         population = roll(ranking, size)
 
         arithmetic_crossover(population, breeding_rate)
 
-        mutation(population, mutation_rate)
+        uniform_mutation(population, mutation_rate)
 
-    plot(population)
+        if plot_each_generation:
+            plot_3d(population)
 
-    print('test')
+    # End results plotting
+    plot_3d(population)
+    plot_2d(result_data, expected_result)
+
+    print('Resultado final:\n  x = {}\n  y = {} \n  f(x,y) = {}'\
+          '\n  Acerto: {}%'.format(ranking['x'][0], 
+                                   ranking['y'][0],
+                                   f(ranking['x'][0], ranking['y'][0]),
+                                   round(100*f(ranking['x'][0], ranking['y'][0])/expected_result, 1)))
     
