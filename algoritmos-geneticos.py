@@ -14,19 +14,19 @@ def plot_3d(points):
     X, Y = np.meshgrid(x, y)
     Z = f(X, Y)
 
-    fig = plt.figure(0)
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d", computed_zorder=False)
+    ax.view_init(elev=100.)
     
     # Plot graph
-    ax.plot_surface(X, Y, Z, rstride=2, cstride=2,
-                    cmap='summer', edgecolor='none', zorder=0.5)
+    ax.contour(X, Y, Z, levels=8, cmap='summer', zorder=0.5)
     ax.set_title('bird')
-    
+
     # Plot points
     xdata = np.array(points).T[0]
     ydata = np.array(points).T[1]
     zdata = f(xdata, ydata)
-    ax.scatter3D(xdata, ydata, zdata, c='black', linewidths=1, zorder=1)
+    ax.scatter(xdata, ydata, zdata, c='black', linewidths=1, zorder=1)
     
     fig.show()
 
@@ -37,7 +37,7 @@ def plot_2d(results, expected_result):
     x = np.linspace(start=0, stop=len(results)-1, num=len(results))
 
     # Compute data in percentage (100 is the expected result)
-    plt.plot(x, 100*f(np.array(results).T[0], np.array(results).T[1])/expected_result)
+    plt.plot(x, np.array(results)*100/expected_result)
 
     plt.xlabel('Geracao')
     plt.ylabel('Acerto')
@@ -129,10 +129,10 @@ if __name__ == "__main__":
 
     size = 100
     breeding_rate = 0.7
-    mutation_rate = 0.001
-    generations = 20
+    mutation_rate = 0.01
+    generations = 30
     expected_result = -106.764537
-    # If true, will show a 3D graph at the end of each generation.
+    # If true, will show a 3D graph at the end of each 5 generations.
     plot_each_generation = False
 
     population = []
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     
         ranking = linear_rank(population)
 
-        result_data.append([ranking['x'][0], ranking['y'][0]])
+        result_data.append(sum(f(np.array(ranking['x']).T,np.array(ranking['y']).T)/float(len(ranking))))
 
         population = roll(ranking, size)
 
@@ -153,11 +153,12 @@ if __name__ == "__main__":
 
         uniform_mutation(population, mutation_rate)
 
-        if plot_each_generation:
+        if plot_each_generation and ((it+1) % 5 == 0 or it == 0 or it == generations):
             plot_3d(population)
 
     # End results plotting
-    plot_3d(population)
+    if not plot_each_generation:
+        plot_3d(population)
     plot_2d(result_data, expected_result)
 
     print('Resultado final:\n  x = {}\n  y = {} \n  f(x,y) = {}'\
